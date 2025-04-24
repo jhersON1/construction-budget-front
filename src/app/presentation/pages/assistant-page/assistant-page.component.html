@@ -1,0 +1,36 @@
+<div class="chat-container">
+  <div class="chat-messages">
+
+    <div class="grid gap-y-2">
+      <!--      chat messages-->
+      <app-chat-message
+        text="Hola, soy Sam, ¿Cúal es tu nombre y que puedo ayudarte?"
+      />
+
+      @for (message of messages(); track $index) {
+        @if (message.isGpt) {
+          <app-chat-message
+            [text]="message.text"
+            [imageInfo]="message.imageInfo"
+          />
+        } @else {
+          <app-my-message
+            [text]="message.text"
+          />
+        }
+      }
+
+      @if (isLoading()) {
+        <app-typing-loader/>
+      }
+
+    </div>
+  </div>
+
+  <!--    Messages Box-->
+  <app-textMessageBoxFile
+    placeholder="Escribe qui lo que deseas"
+    (onMessage)="handleMessage($event)"
+  />
+
+</div>

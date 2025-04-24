@@ -1,33 +1,65 @@
-<main class="flex flex-row mt-7">
-  <nav
-    class="hidden sm:flex flex-col ml-5 w-[370px] min-h-[calc(100vh-3.0rem)] bg-white bg-opacity-10 p-5 rounded-3xl"
-  >
-    <h1
-      class="font-bold text-lg lg:text-3xl bg-gradient-to-br from-white via-white/50 bg-clip-text text-transparent"
-    >
-      AngularGPT<span class="text-indigo-500">.</span>
-    </h1>
-    <span class="text-xl">Bienvenido</span>
+<main class="flex flex-row h-screen p-4 bg-gradient-to-br from-gray-900 to-black">
+  <!-- Sidebar -->
+  <nav class="hidden sm:flex flex-col mr-5 w-[320px] h-[calc(100vh-2rem)] glass-card p-5 transition-all duration-300">
+    <!-- Logo y título -->
+    <div class="flex items-center mb-8">
+      <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3 shadow-lg">
+        <i class="fa-solid fa-robot text-white text-xl"></i>
+      </div>
+      <h1 class="font-bold text-xl lg:text-2xl bg-gradient-to-br from-white to-gray-400 bg-clip-text text-transparent m-0">
+        Budget<span class="text-indigo-400">AI</span>
+      </h1>
+    </div>
+    
+    <!-- Bienvenida -->
+    <div class="flex items-center mb-6 px-2">
+      <div class="w-8 h-8 rounded-full bg-indigo-600/30 flex items-center justify-center mr-3">
+        <i class="fa-regular fa-user text-indigo-300 text-sm"></i>
+      </div>
+      <span class="text-gray-300 font-medium">Bienvenido</span>
+    </div>
 
-    <div class="border-gray-700 border my-3"></div>
+    <div class="border-gray-800 border-b my-4 opacity-50"></div>
 
-    <!-- Nav Links -->
-    @for (route of routes; track route.path) {
-      <app-sidebar-menu-item
-        [description]="route.data!['description']"
-        [icon]="route.data!['icon']"
-        [path]="route.path!"
-        [title]="route.data!['title']"
-      />
-    }
-    <!-- End Nav Links -->
+    <!-- Enlaces de navegación -->
+    <div class="flex-1 space-y-1.5">
+      @for (route of routes; track route.path) {
+        <app-sidebar-menu-item
+          [description]="route.data!['description']"
+          [icon]="route.data!['icon']"
+          [path]="route.path!"
+          [title]="route.data!['title']"
+        />
+      }
+    </div>
+    
+    <!-- Footer del sidebar -->
+    <div class="mt-auto border-t border-gray-800 pt-4">
+      <div class="flex items-center text-sm text-gray-500 px-2">
+        <i class="fa-regular fa-circle-question mr-2"></i>
+        <span>Ayuda y soporte</span>
+      </div>
+    </div>
   </nav>
 
-  <section
-    class="mx-3 sm:mx-20 flex flex-col w-full h-[calc(100vh-50px)] bg-white bg-opacity-10 p-5 rounded-3xl"
-  >
-    <div class="flex h-full flex-row">
-      <div class="flex flex-col flex-auto p-1">
+  <!-- Contenido principal -->
+  <section class="flex-1 glass-card mx-2 p-6 h-[calc(100vh-2rem)]">
+    <div class="flex h-full flex-col">
+      <!-- Barra superior opcional -->
+      <div class="hidden sm:flex items-center justify-between mb-6">
+        <h2 class="text-xl font-medium text-gray-200">Asistente de Presupuesto</h2>
+        <div class="flex space-x-3">
+          <button class="p-2 rounded-full hover:bg-white/10 transition-colors">
+            <i class="fa-regular fa-bell text-gray-400"></i>
+          </button>
+          <button class="p-2 rounded-full hover:bg-white/10 transition-colors">
+            <i class="fa-solid fa-gear text-gray-400"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Contenido principal -->
+      <div class="flex flex-col flex-1">
         <router-outlet/>
       </div>
     </div>

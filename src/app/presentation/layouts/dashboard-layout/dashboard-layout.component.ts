@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from "@angular/common";
 import { RouterModule } from '@angular/router';
 import { SidebarMenuItemComponent } from '../../components/sidebar-menu-item/sidebar-menu-item.component';
 import { routes } from '../../../app.routes';
+import { MessageService } from 'app/presentation/services/message.service';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -17,10 +18,9 @@ import { routes } from '../../../app.routes';
 })
 export class DashboardLayoutComponent {
   public routes = routes[0].children?.filter( (route) => route.data);
+  private messageService = inject(MessageService);
 
-  // Añadir este método dentro de la clase DashboardLayoutComponent
   cleanLocalStorage() {
-    localStorage.removeItem('thread');
-    alert('Datos limpiados correctamente');
+    this.messageService.clearMessages();
   }
 }

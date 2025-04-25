@@ -10,6 +10,7 @@ import {
 import { OpenAiService } from '../../services/openai.service';
 import { Message, QuestionResponse } from '@interfaces/index';
 import { environment } from 'environments/environment';
+import { MessageService } from 'app/presentation/services/message.service';
 
 
 
@@ -28,67 +29,60 @@ import { environment } from 'environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export default class AssistantPageComponent implements OnInit {
-  public messages: WritableSignal<Message[]> = signal<Message[]>([])
   public isLoading: WritableSignal<boolean> = signal<boolean>(false);
   public openAiService: OpenAiService = inject(OpenAiService);
 
-  public threadId = signal<string | undefined>(undefined)
+  private messageService = inject(MessageService);
+
+  public messages: WritableSignal<Message[]>  = this.messageService.messages;
 
   ngOnInit(): void {
-    this.openAiService.createThread().subscribe(id => {
-      this.threadId.set(id);
-    });
+    this.messageService.initThreadId();
   }
 
   handleMessage(event: string | ITextMessageEvent): void {
     this.isLoading.set(true);
 
-    // 1. Mostrar mensaje propio
     if (typeof event === 'string') {
       this.addMyText(event);
     } else {
       this.addMyText(event.prompt ?? '');
     }
 
-    // 2. Enviar a la API (pasa file si existe)
     const prompt = typeof event === 'string' ? event : event.prompt ?? '';
     const file = typeof event === 'string' ? undefined : event.file;
-    this.openAiService.postQuestion(this.threadId()!, prompt, file)
+
+    this.openAiService.postQuestion(this.messageService.getThreadId()!, prompt, file)
       .subscribe(replies => this.handleReplies(replies));
   }
 
   private addMyText(text: string) {
-    this.messages.update(prev => [
-      ...prev,
-      { text, isGpt: false }
-    ]);
+    this.messageService.addMessage({ text, isGpt: false });
   }
 
-  private handleReplies(replies: QuestionResponse[]) {
+  private handleReplies(replies: QuestionResponse[]): void {
     this.isLoading.set(false);
-    const seen = new Set(this.messages().map(m => m.text || m.imageInfo?.url));
+     console.log('handleReplies', replies);
+    const seen = new Set(
+      this.messageService.messages().map(m => m.text || m.imageInfo?.url)
+    );
 
     for (const reply of replies) {
       for (const part of reply.content) {
         if (typeof part === 'string') {
           if (!seen.has(part)) {
-            this.messages.update(prev => [
-              ...prev,
-              { text: part, isGpt: true }
-            ]);
+            this.messageService.addMessage({ text: part, isGpt: true });
             seen.add(part);
           }
         } else if (part.type === 'image') {
-          //todo: hacer en el backend una conexión con cloudinary para obtener la url de la imagen
+          // Construir URL con tu entorno
           const url = `${environment.assistantApi}/assistant/files/${part.fileId}`;
           if (!seen.has(url)) {
-            this.messages.update(prev => [
-              ...prev,
-              {
-                imageInfo: { url, alt: 'Imagen del asistente' }, isGpt: true,
-                text: ''
-              }
-            ]);
+            this.messageService.addMessage({
+              imageInfo: { url, alt: 'Imagen del asistente' },
+              isGpt: true,
+              text: ''
+            });
             seen.add(url);
           }
         }

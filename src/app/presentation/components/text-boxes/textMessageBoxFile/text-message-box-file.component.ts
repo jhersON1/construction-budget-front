@@ -1,5 +1,5 @@
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 
 export interface ITextMessageEvent {
   file: File;
@@ -40,14 +40,21 @@ export class TextMessageBoxFileComponent {
   //   this.form.reset();
   // }
 
-    @Input() placeholder: string = '';
+  @Input() placeholder: string = '';
   @Output() onMessage: EventEmitter<ITextMessageEvent> = new EventEmitter<ITextMessageEvent>();
 
   public fb: FormBuilder = inject(FormBuilder);
   public form = this.fb.group({
     prompt: [],
-    file: [null, Validators.required],
-  });
+    file: [null],
+  }, { validators: this.atLeastOneFieldValidator });
+
+  private atLeastOneFieldValidator(group: AbstractControl): ValidationErrors | null {
+    const prompt = group.get('prompt')?.value;
+    const file = group.get('file')?.value;
+
+    return (prompt || file) ? null : { atLeastOneRequired: true };
+  }
 
   // Para la mini-vista
   public previewUrl: string | null = null;

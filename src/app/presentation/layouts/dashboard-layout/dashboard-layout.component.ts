@@ -17,4 +17,10 @@ import { routes } from '../../../app.routes';
 })
 export class DashboardLayoutComponent {
   public routes = routes[0].children?.filter( (route) => route.data);
+
+  // Añadir este método dentro de la clase DashboardLayoutComponent
+  cleanLocalStorage() {
+    localStorage.removeItem('thread');
+    alert('Datos limpiados correctamente');
+  }
 }

@@ -79,6 +79,7 @@ export default class AssistantPageComponent implements OnInit {
             seen.add(part);
           }
         } else if (part.type === 'image') {
+          //todo: hacer en el backend una conexión con cloudinary para obtener la url de la imagen
           const url = `${environment.assistantApi}/assistant/files/${part.fileId}`;
           if (!seen.has(url)) {
             this.messages.update(prev => [
@@ -94,4 +95,5 @@ export default class AssistantPageComponent implements OnInit {
       }
     }
   }
+
 }

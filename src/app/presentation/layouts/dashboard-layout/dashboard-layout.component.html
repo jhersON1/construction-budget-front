@@ -55,6 +55,14 @@
           <button class="p-2 rounded-full hover:bg-white/10 transition-colors">
             <i class="fa-solid fa-gear text-gray-400"></i>
           </button>
+          <!-- Nuevo botón de limpieza -->
+          <button 
+            class="p-2 rounded-full hover:bg-white/10 transition-colors hover:cursor-pointer" 
+            (click)="cleanLocalStorage()"
+            title="Limpiar datos">
+            Limpiar datos
+            <i class="fa-solid fa-broom text-gray-400"></i>
+          </button>
         </div>
       </div>
       

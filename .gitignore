@@ -44,5 +44,4 @@ Thumbs.db
 # Others
 .vscode
 package-lock.json
-environment.ts
 .angular

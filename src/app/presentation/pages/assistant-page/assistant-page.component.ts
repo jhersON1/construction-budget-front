@@ -26,17 +26,13 @@ import { MessageService } from 'app/presentation/services/message.service';
   styleUrl: './assistant-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export default class AssistantPageComponent implements OnInit {
+export default class AssistantPageComponent {
   public isLoading: WritableSignal<boolean> = signal<boolean>(false);
   public openAiService: OpenAiService = inject(OpenAiService);
 
   private messageService = inject(MessageService);
 
   public messages: WritableSignal<Message[]>  = this.messageService.messages;
-
-  ngOnInit(): void {
-    this.messageService.initThreadId();
-  }
 
   handleMessage(event: string | ITextMessageEvent): void {
     this.isLoading.set(true);

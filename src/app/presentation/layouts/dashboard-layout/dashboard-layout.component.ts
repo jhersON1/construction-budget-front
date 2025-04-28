@@ -44,7 +44,7 @@ export class DashboardLayoutComponent {
       return;
     }
     const last = assistantMsgs[assistantMsgs.length - 1];
-    // Preparamos el payload según la interfaz del servicio
+
     const payload: Message[] = [
       { role: 'assistant', content: [last.text] }
     ];

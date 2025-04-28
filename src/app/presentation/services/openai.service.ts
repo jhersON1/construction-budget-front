@@ -11,8 +11,8 @@ export interface Message {
 
 @Injectable({ providedIn: 'root' })
 export class OpenAiService {
-
   private apiUrl = 'http://localhost:3000/assistant/text-to-json';
+  private reportsUrl = 'http://localhost:3000/reports/bill'; // URL para generar PDF
   private http = inject(HttpClient);
 
   createThread(): Observable<string> {
@@ -27,12 +27,18 @@ export class OpenAiService {
     );
   }
 
-
   postQuestion(threadId: string, question: string, file?: File) {
     return from(postQuestionUseCase(threadId, question, file));
   }
 
   convertTextToJson(messages: Message[]): Observable<any> {
     return this.http.post<any>(this.apiUrl, { messages });
+  }
+
+  // Nueva función para generar y descargar PDF
+  generatePdf(data: any): Observable<Blob> {
+    return this.http.post(this.reportsUrl, data, {
+      responseType: 'blob', // Importante para recibir datos binarios
+    });
   }
 }

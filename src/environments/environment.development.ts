@@ -1,4 +1,4 @@
 export const environment = {
-  backendApi: "http://localhost:3000/gpt",
-  assistantApi: "http://localhost:3000/assistant"
+  backendApi: 'https://construction-budget-back.onrender.com/gpt',
+  assistantApi: 'https://construction-budget-back.onrender.com/assistant',
 };

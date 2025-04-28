@@ -11,8 +11,10 @@ export interface Message {
 
 @Injectable({ providedIn: 'root' })
 export class OpenAiService {
-  private apiUrl = 'http://localhost:3000/assistant/text-to-json';
-  private reportsUrl = 'http://localhost:3000/reports/bill'; // URL para generar PDF
+  private apiUrl =
+    'https://construction-budget-back.onrender.com/assistant/text-to-json';
+  private reportsUrl =
+    'https://construction-budget-back.onrender.com/reports/bill'; // URL para generar PDF
   private http = inject(HttpClient);
 
   createThread(): Observable<string> {

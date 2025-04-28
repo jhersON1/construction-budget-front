@@ -13,8 +13,6 @@ import { environment } from 'environments/environment';
 import { MessageService } from 'app/presentation/services/message.service';
 
 
-
-
 @Component({
   selector: 'app-assistant-page',
   imports: [

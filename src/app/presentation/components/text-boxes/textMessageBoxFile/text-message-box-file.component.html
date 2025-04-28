@@ -1,110 +1,32 @@
-<!-- <form
-  [formGroup]="form"
-  (ngSubmit)="handleSubmit()"
-  class="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4"
->
-
-  <div class="mr-3">
-    <button
-      (click)="fileInput.click()"
-      class="flex items-center justify-center text-gray-400">
-      <i class="fa-solid fa-paperclip text-xl"></i>
-    </button>
-
-    <input
-      type="file"
-      #fileInput
-      hidden
-      (change)="handleSelectedFile($event)"
-    >
-  </div>
-
-  <div class="flex-grow">
-    <div class="relative w-full">
-
-      <input
-        type="text"
-        autofocus
-        class="flex w-full border rounded-xl text-gray-800 focus:outline-none focus:border-indigo-300 pl-4 h-10"
-        [placeholder]="placeholder"
-        formControlName="prompt"
-      >
-    </div>
-  </div>
-
-  <div class="ml-4">
-    <button
-      class="btn-primary"
-      type="submit"
-      [disabled]="form.invalid"
-    >
-      <span class="mr-2">Enviar</span>
-      <i class="fa-regular fa-paper-plane"></i>
-    </button>
-  </div>
-
-</form> -->
-
-<!-- Vista previa de la imagen seleccionada -->
 @if (previewUrl) {
-  <div class="flex items-center mb-2">
-    <img
-      [src]="previewUrl"
-      alt="Vista previa"
-      class="h-12 w-12 rounded shadow mr-2 object-cover"
-    />
-    <button
-      type="button"
-      (click)="removeFile()"
-      class="text-gray-500 hover:text-red-600"
-      aria-label="Quitar imagen"
-    >
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-  </div>
+<div class="flex items-center mb-2">
+  <img [src]="previewUrl" alt="Vista previa" class="h-12 w-12 rounded shadow mr-2 object-cover" />
+  <button type="button" (click)="removeFile()" class="text-gray-500 hover:text-red-600" aria-label="Quitar imagen">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+</div>
 }
 
-<form
-  [formGroup]="form"
-  (ngSubmit)="handleSubmit()"
-  class="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4"
->
+<form [formGroup]="form" (ngSubmit)="handleSubmit()"
+  class="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
   <div class="mr-3">
-    <button
-      (click)="fileInput.click()"
-      type="button"
-      class="flex items-center justify-center text-gray-400"
-      aria-label="Adjuntar archivo"
-    >
+    <button (click)="fileInput.value = ''; fileInput.click()" type="button"
+      class="flex items-center justify-center text-gray-400" aria-label="Adjuntar archivo">
       <i class="fa-solid fa-paperclip text-xl"></i>
     </button>
-    <input
-      type="file"
-      #fileInput
-      hidden
-      (change)="handleSelectedFile($event)"
-      accept="image/*"
-    />
+    <input type="file" #fileInput hidden (change)="handleSelectedFile($event)" accept="image/*" />
   </div>
 
   <div class="flex-grow">
     <div class="relative w-full">
-      <input
-        type="text"
-        autofocus
+      <input type="text" autofocus
         class="flex w-full border rounded-xl text-gray-800 focus:outline-none focus:border-indigo-300 pl-4 h-10"
-        [placeholder]="placeholder"
-        formControlName="prompt"
-      />
+        [placeholder]="placeholder" formControlName="prompt" />
     </div>
   </div>
 
   <div class="ml-4">
-    <button
-      class="btn-primary"
-      type="submit"
-      [disabled]="form.invalid"
-    >
+    <button class="btn-primary" type="submit" [disabled]="form.invalid">
       <span class="mr-2">Enviar</span>
       <i class="fa-regular fa-paper-plane"></i>
     </button>

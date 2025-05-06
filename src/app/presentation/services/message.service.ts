@@ -65,13 +65,10 @@ export class MessageService {
   }
 
   addMessage(msg: Message) {
-    this.messages.update(prev => {
-      const updated = [...prev, msg];
-      // Guardar inmediatamente
-      const id = this.threadId();
-      if (id) this.saveMessagesFor(id, updated);
-      return updated;
-    });
+    const id = this.threadId();
+    if (id) {
+      this.addMessageToThread(msg, id);
+    }
   }
 
   clearMessages() {
@@ -111,5 +108,26 @@ export class MessageService {
     // Cargar mensajes guardados
     const saved = localStorage.getItem(`thread_${threadId}`);
     this.messages.set(saved ? JSON.parse(saved) : []);
+  }
+
+  /**
+ * Guarda un mensaje en el hilo dado, y sólo si
+ * ese hilo está activo en la UI, actualiza la señal `messages`.
+ */
+  addMessageToThread(msg: Message, threadId: string) {
+    // 1. Cargar del storage los mensajes viejos de ese hilo
+    const savedJson = localStorage.getItem(`thread_${threadId}`);
+    const oldMsgs: Message[] = savedJson ? JSON.parse(savedJson) : [];
+
+    // 2. Append
+    const updated = [...oldMsgs, msg];
+
+    // 3. Guardar siempre en localStorage
+    this.saveMessagesFor(threadId, updated);
+
+    // 4. Sólo si ese hilo coincide con el activo, actualizo la señal
+    if (this.threadId() === threadId) {
+      this.messages.set(updated);
+    }
   }
 }

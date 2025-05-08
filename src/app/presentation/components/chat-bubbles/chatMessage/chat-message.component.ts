@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MarkdownComponent } from 'ngx-markdown';
 
 @Component({
@@ -8,7 +8,8 @@ import { MarkdownComponent } from 'ngx-markdown';
     MarkdownComponent
   ],
   templateUrl: './chat-message.component.html',
-  styleUrl: './chat-message.component.scss'
+  styleUrl: './chat-message.component.scss',
+  changeDetection: ChangeDetectionStrategy.Default
 })
 export class ChatMessageComponent {
   @Input({ required: true }) text!: string;

@@ -7,7 +7,7 @@
         text="Hola, soy Sam, ¿Cúal es tu nombre y que puedo ayudarte?"
       />
 
-      @for (message of messages(); track $index) {
+      @for (message of messages(); track message.text) {
         @if (message.isGpt) {
           <app-chat-message
             [text]="message.text"

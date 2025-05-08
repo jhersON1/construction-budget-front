@@ -1,4 +1,4 @@
-import { inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { effect, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { Message } from '@interfaces/message.interface';
 import { OpenAiService } from './openai.service';
 
@@ -17,53 +17,106 @@ export class MessageService {
   public threads: WritableSignal<Thread[]> = signal<Thread[]>([]);
 
   constructor() {
-    // Cargar threads previos
     const stored = localStorage.getItem('threads');
     if (stored) {
-      this.threads.set(JSON.parse(stored));
+      try {
+        this.threads.set(JSON.parse(stored));
+      } catch (e) {
+        console.error('[MessageService] Error al parsear threads:', e);
+        this.threads.set([]);
+      }
     }
-    // Restaurar o crear hilo principal
+
     const savedId = localStorage.getItem('thread');
     if (savedId) {
-      // Asegurar que existe en la lista de threads
       if (!this.threads().some(t => t.id === savedId)) {
         this.threads.update(prev => [...prev, { id: savedId, name: `Chat ${this.threads().length + 1}` }]);
-        localStorage.setItem('threads', JSON.stringify(this.threads()));
+        this.saveThreads();
       }
-      // Cargar ese hilo
-      this.loadThread(savedId);
+
+      this.threadId.set(savedId);
+
+      this.refreshMessagesFromStorage(savedId);
     } else {
-      // Crear nuevo hilo por defecto
       this.initThreadId();
     }
+
+    effect(() => {
+      const currentThreadId = this.threadId();
+      if (currentThreadId) {
+        this.refreshMessagesFromStorage(currentThreadId);
+      }
+    });
   }
 
+  /**
+   * Guarda la lista de hilos en localStorage
+   */
   private saveThreads() {
     localStorage.setItem('threads', JSON.stringify(this.threads()));
   }
 
+  /**
+   * Guarda los mensajes de un hilo específico en localStorage
+   * @param id - Identificador del hilo
+   * @param msgs - Lista de mensajes a guardar
+   */
   private saveMessagesFor(id: string, msgs: Message[]) {
-    localStorage.setItem(`thread_${id}`, JSON.stringify(msgs));
+    localStorage.setItem(id, JSON.stringify(msgs));
   }
 
+  /**
+   * Carga los mensajes desde localStorage para un hilo específico
+   * y actualiza la señal de mensajes
+   * @param threadId - Identificador del hilo a cargar
+   */
+  private refreshMessagesFromStorage(threadId: string) {
+    const saved = localStorage.getItem(threadId);
+    const messages = saved ? JSON.parse(saved) : [];
+    this.messages.set(messages);
+  }
+
+  /**
+   * Inicializa un nuevo ID de hilo mediante una llamada al servicio
+   * y lo registra en la lista de hilos
+   */
   initThreadId() {
-    this.openAiService.createThread().subscribe(id => {
-      this.threadId.set(id);
-      // Registrar en threads si no existe
-      if (!this.threads().some(t => t.id === id)) {
-        this.threads.update(prev => [...prev, { id, name: `Chat ${this.threads().length + 1}` }]);
-        this.saveThreads();
+    this.openAiService.createThread().subscribe({
+      next: (id) => {
+        if (!this.threads().some(t => t.id === id)) {
+          this.threads.update(prev => [...prev, { id, name: `Chat ${this.threads().length + 1}` }]);
+          this.saveThreads();
+        }
+
+        localStorage.setItem('thread', id);
+        this.threadId.set(id);
+      },
+      error: (err) => {
+        console.error('[MessageService] Error al crear thread:', err);
+        const threads = this.threads();
+        if (threads.length > 0) {
+          const firstThread = threads[0].id;
+          localStorage.setItem('thread', firstThread);
+          this.threadId.set(firstThread);
+        } else {
+          alert('Error al conectar con el servidor. Por favor, intenta más tarde.');
+        }
       }
-      // Persistir hilo actual y mensajes vacíos
-      localStorage.setItem('thread', id);
-      this.messages.set([]);
     });
   }
 
+  /**
+   * Obtiene el ID del hilo actual
+   * @returns El ID del hilo actual o undefined si no hay ninguno
+   */
   getThreadId() {
     return this.threadId();
   }
 
+  /**
+   * Añade un mensaje al hilo actual
+   * @param msg - Mensaje a añadir
+   */
   addMessage(msg: Message) {
     const id = this.threadId();
     if (id) {
@@ -71,63 +124,103 @@ export class MessageService {
     }
   }
 
+  /**
+   * Elimina todos los mensajes y hilos almacenados e inicializa un nuevo hilo
+   */
   clearMessages() {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+
+      if (this.threads().some(t => t.id === key)) {
+        keysToRemove.push(key);
+      }
+    }
+
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    localStorage.removeItem('thread');
+    localStorage.removeItem('threads');
+
     this.messages.set([]);
     this.threadId.set(undefined);
-    localStorage.removeItem('thread');
-    alert('Datos limpiados correctamente');
     this.threads.set([]);
-    localStorage.removeItem('threads');
+
+    alert('Datos limpiados correctamente');
     this.initThreadId();
   }
 
-  /** Arranca un nuevo chat, guardando primero el actual */
+  /**
+   * Crea un nuevo hilo de conversación, guardando primero el actual
+   */
   newChat() {
     const current = this.threadId();
     if (current) {
       this.saveMessagesFor(current, this.messages());
-      localStorage.removeItem('thread');
     }
-    // Limpiar y crear hilo
+
     this.messages.set([]);
     this.threadId.set(undefined);
+    localStorage.removeItem('thread');
+
     this.initThreadId();
   }
 
-  /** Cambia a un chat existente, guardando el actual */
+  /**
+   * Cambia al hilo especificado, guardando primero el hilo actual
+   * @param threadId - ID del hilo al que cambiar
+   */
   loadThread(threadId: string) {
     const prev = this.threadId();
-    if (prev) {
+    if (prev && prev !== threadId) {
       this.saveMessagesFor(prev, this.messages());
     }
-    // Limpiar vista antes de cargar
+
     this.messages.set([]);
-    // Ajustar hilo
-    this.threadId.set(threadId);
+
+    const savedJson = localStorage.getItem(threadId);
+    const newMessages = savedJson ? JSON.parse(savedJson) : [];
+
     localStorage.setItem('thread', threadId);
-    // Cargar mensajes guardados
-    const saved = localStorage.getItem(`thread_${threadId}`);
-    this.messages.set(saved ? JSON.parse(saved) : []);
+    this.threadId.set(threadId);
+    this.messages.set(newMessages);
   }
 
   /**
- * Guarda un mensaje en el hilo dado, y sólo si
- * ese hilo está activo en la UI, actualiza la señal `messages`.
- */
+   * Añade un mensaje a un hilo específico y actualiza la UI si es el hilo activo
+   * @param msg - Mensaje a añadir
+   * @param threadId - ID del hilo al que añadir el mensaje
+   */
   addMessageToThread(msg: Message, threadId: string) {
-    // 1. Cargar del storage los mensajes viejos de ese hilo
-    const savedJson = localStorage.getItem(`thread_${threadId}`);
+    const savedJson = localStorage.getItem(threadId);
     const oldMsgs: Message[] = savedJson ? JSON.parse(savedJson) : [];
-
-    // 2. Append
     const updated = [...oldMsgs, msg];
 
-    // 3. Guardar siempre en localStorage
     this.saveMessagesFor(threadId, updated);
 
-    // 4. Sólo si ese hilo coincide con el activo, actualizo la señal
     if (this.threadId() === threadId) {
       this.messages.set(updated);
+    }
+  }
+
+  /**
+   * Obtiene los mensajes de un hilo específico desde localStorage
+   * @param threadId - ID del hilo
+   * @returns Lista de mensajes del hilo
+   */
+  getMessagesFromThread(threadId: string): Message[] {
+    const savedJson = localStorage.getItem(threadId);
+    return savedJson ? JSON.parse(savedJson) : [];
+  }
+
+  /**
+   * Fuerza la recarga de mensajes del hilo actual desde localStorage
+   * Útil cuando se reciben respuestas asincrónicas del servidor
+   */
+  refreshCurrentMessages() {
+    const current = this.threadId();
+    if (current) {
+      this.refreshMessagesFromStorage(current);
     }
   }
 }
